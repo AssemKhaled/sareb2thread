@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 import sarebApp.com.sareb.entities.Device;
 
 import java.util.Date;
@@ -13,12 +14,19 @@ import java.util.Optional;
 /**
  * @author Assem
  */
+@Repository
 public interface DeviceRepository extends JpaRepository<Device,Long> {
 
     Optional<List<Device>> findAllByIdIn(List<Long> ids , Pageable pageable);
+    Optional<List<Device>> findAllByIdIn(List<Long> ids);
     Optional<List<Device>> findAllByIdInAndDeleteDate(List<Long> ids , String deleteDate , Pageable pageable);
+    Optional<List<Device>> findAllByIdInAndDeleteDate(List<Long> ids , String deleteDate);
     Optional<List<Device>> findAllByIdInAndEndDateGreaterThan(List<Long> ids , Date endDate , Pageable pageable);
     Optional<List<Device>> findAllByIdInAndEndDateGreaterThan(List<Long>ids,Date date);
+    Optional<Device> findByIdAndDeleteDate(Long id , String deleteDate);
+    Optional<Device> findByUser_idAndDeleteDate(Long userId,String deleteDate);
+    Optional<List<Device>> findAllByUser_idInAndDeleteDate(List<Long> userId,String deleteDate);
+    Optional<List<Device>> findAllByUser_idInAndDeleteDate(List<Long> userId,String deleteDate,Pageable pageable);
 
     @Query(value = "select tc_devices.id from tc_devices", nativeQuery = true)
     List<Integer> getAllDeviceIds();
@@ -33,6 +41,9 @@ public interface DeviceRepository extends JpaRepository<Device,Long> {
     Optional<List<Device>>  getAllDevicesBySearch(@Param("search") String search, @Param("offset")int offset, @Param("size")int size);
     @Query(value = "select tc_devices.id FROM tc_devices INNER JOIN  tc_user_device ON tc_devices.id=tc_user_device.deviceid where tc_user_device.userid IN (:userIds) and tc_devices.delete_date is null",nativeQuery = true)
     List<Integer> deviceIdsByUserChildrens(@Param("userIds") List<Long> userIds);
+    @Query(value = "select id FROM tc_devices where user_id IN (:userIds) and tc_devices.delete_date is null",nativeQuery = true)
+    List<Integer> clientDeviceIds(@Param("userIds") List<Long> userIds);
+
     @Query(value = " SELECT  * FROM tc_devices "
             + "  Where ((( uniqueid LIKE LOWER(CONCAT('%',:search, '%')) " +
             "OR name LIKE LOWER(CONCAT('%',:search, '%')) OR " +
@@ -40,6 +51,8 @@ public interface DeviceRepository extends JpaRepository<Device,Long> {
     Optional<List<Device>>  getAllDevicesBySearchAndUser_idANDAndEndDate(@Param("search") String search,@Param("offset")int offset,@Param("size")int size,@Param("userid") long userid);
     @Query(value = "select tc_user_client_device.deviceid from tc_user_client_device where tc_user_client_device.userid=:userId", nativeQuery = true)
     List<Integer> newGetDevicesIds(@Param("userId") Long userId);
+
+
 
 
 }

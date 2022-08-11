@@ -3,6 +3,7 @@ package sarebApp.com.sareb.config.security;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     public static final String AUTHORIZATION = "Authorization";
@@ -33,12 +35,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 //    private final JwtTokenService jwtTokenService;
     private final JwtUtil jwtUtil;
 
-    public JwtRequestFilter(MyUserDetailsService userDetailsService, JwtUtil jwtUtil) {
-        this.userDetailsService = userDetailsService;
-//        this.jwtTokenService = jwtTokenService;
-
-        this.jwtUtil = jwtUtil;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

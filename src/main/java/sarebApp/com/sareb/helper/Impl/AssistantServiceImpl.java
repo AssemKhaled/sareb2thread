@@ -125,27 +125,23 @@ public class AssistantServiceImpl implements AssistantService {
     @Override
     public List<Long> getUserChildrens(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
-        User user = optionalUser.get();
         List<Long> userIds =new ArrayList<>();
         userIds.add(userId);
-        if (user!= null){
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
             if (user.getAccountType() == 2){
                 //get all clients of vendor
-                Optional<List<Long>> optionalUserList = Optional.ofNullable(userRepository.getUsersByVendorId(userId));
+                Optional<List<User>> optionalUserList = userRepository.findByVendorIdAndDeleteDate(userId,null);
                 if (optionalUserList.isPresent()) {
-                    List<Long> userList = optionalUserList.get();
-
-//                    userIds.addAll(userList);
-                    userIds = userList;
-//                    userIds = userList.stream()
-//                            .map(User::getId)
-//                            .filter(Objects::nonNull)
-//                            .collect(Collectors.toList());
-
+                    List<User> userList = optionalUserList.get();
+                    userIds = userList.stream()
+                            .map(User::getId)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
                 }
             }else if (user.getAccountType() == 3){
                 //get all users of client
-                Optional<List<User>> optionalUserList = userRepository.findAllByClientId(userId);
+                Optional<List<User>> optionalUserList = userRepository.findAllByClientIdAndDeleteDate(userId,null);
                 if (optionalUserList.isPresent()) {
                     List<User> userList = optionalUserList.get();
                     userIds = userList.stream()
@@ -154,7 +150,6 @@ public class AssistantServiceImpl implements AssistantService {
                             .collect(Collectors.toList());
                 }
             }
-        }else {
             return userIds;
         }
         return userIds;

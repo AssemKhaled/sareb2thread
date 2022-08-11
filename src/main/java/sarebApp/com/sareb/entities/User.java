@@ -71,7 +71,7 @@ public class User extends Attributes{
 	private String company_phone;
 	
 	@Column(name = "delete_date")
-	private String delete_date;
+	private String deleteDate;
 	
 	@Column(name = "photo")
 	private String photo;
@@ -292,11 +292,11 @@ public class User extends Attributes{
 	public void setCompany_phone(String company_phone) {
 		this.company_phone = company_phone;
 	}
-	public String getDelete_date() {
-		return delete_date;
+	public String getDeleteDate() {
+		return deleteDate;
 	}
-	public void setDelete_date(String delete_date) {
-		this.delete_date = delete_date;
+	public void setDeleteDate(String delete_date) {
+		this.deleteDate = delete_date;
 	}
 	public String getReject_reason() {
 		return reject_reason;

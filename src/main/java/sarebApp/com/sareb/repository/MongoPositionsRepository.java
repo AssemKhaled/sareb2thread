@@ -3,6 +3,7 @@ package sarebApp.com.sareb.repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.stereotype.Repository;
 import sarebApp.com.sareb.entities.MongoPositions;
 
 import java.util.List;
@@ -13,9 +14,11 @@ import java.util.Optional;
  * @author fuinco
  *
  */
+@Repository
 public interface MongoPositionsRepository extends MongoRepository<MongoPositions,String>{
 
 	Optional<List<MongoPositions>> findAllBy_idIn(List<String> ids);
+	Optional<MongoPositions> findBy_id(String id);
 	Integer countByDeviceidIn(List<Long> deviceIds);
 	List<MongoPositions> findTop10ByDeviceidAndSpeedOrderByServertimeDesc(Long deviceId , double speed);
 	List<MongoPositions> findTop10ByDeviceidAndSpeedAfterOrderByServertimeDesc(Long deviceId , double speed);

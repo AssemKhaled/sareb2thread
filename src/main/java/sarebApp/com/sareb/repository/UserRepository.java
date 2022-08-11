@@ -18,10 +18,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByEmail(String email);
-    Optional<List<User>> findAllByClientId(Long userId);
-
-    @Query(value = "SELECT tc_users.* FROM tc_user_user inner join tc_users on tc_user_user.manageduserid=tc_users.id where tc_user_user.userid = :userId ", nativeQuery = true)
-    List<User> getActiveAndInactiveChildrenOfUser(@Param("userId") Long userId);
-    @Query(value = "SELECT id FROM tc_users where vendor_id=:vendorId or id=:vendorId", nativeQuery = true)
-    List<Long> getUsersByVendorId(@Param("vendorId") Long roleId);
+    Optional<List<User>> findAllByClientIdAndDeleteDate(Long userId,String deleteDate);
+    Optional<User> findByIdAndDeleteDate(Long id,String deleteDate);
+    Optional<List<User>> findByVendorIdAndDeleteDate(Long userId,String deleteDate);
 }

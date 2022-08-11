@@ -1,16 +1,37 @@
 package sarebApp.com.sareb.helper.Impl;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.mongodb.BasicDBObject;
+import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
+import sarebApp.com.sareb.dto.responses.MongoMapperResponse;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregationOptions;
+
 @Repository
+@RequiredArgsConstructor
 public class Utilities {
+
+    private final MongoTemplate mongoTemplate;
 
     public double speedConverter(Double speed){
         double convertedSpeed = Math.abs(speed * (1.852));
@@ -186,6 +207,125 @@ public class Utilities {
 
         totalDuration = String.valueOf(hoursDuration)+":"+String.valueOf(minutesDuration)+":"+String.valueOf(secondsDuration);
         return totalDuration;
+    }
+
+    public MongoMapperResponse MongoObjJsonMapper(Object attributes ,Double speed
+            , Long deviceId , String lastUpdate ){
+
+        MongoMapperResponse result = new MongoMapperResponse();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+//       mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, true);
+        String json = null;
+
+        try {
+                json = mapper.writeValueAsString(attributes);
+            } catch (JsonProcessingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            JSONObject obj = new JSONObject(json);
+
+            if(obj.has("ignition")) {
+                if(obj.getBoolean("ignition")==true) {
+                    if(speed > 0) {
+                        ArrayList<Map<Object,Object>> lastPoints;
+
+                        lastPoints = getLastPoints(deviceId,lastUpdate);
+                        result.setLastPoints(lastPoints);
+
+                    }
+                }
+            }
+
+            if(obj.has("power")) {
+                if(obj.get("power") != null) {
+                    if(obj.get("power") != "") {
+                        double p = Double.valueOf(obj.get("power").toString());
+                        double round = Math.round(p * 100.0 )/ 100.0;
+                        obj.put("power",String.valueOf(round));
+                    }
+                    else {
+                        obj.put("power", "0");
+                    }
+                }
+                else {
+                    obj.put("power", "0");
+                }
+            }
+
+            if(obj.has("battery")) {
+                if(obj.get("battery") != null) {
+                    if(obj.get("battery") != "") {
+                        double p = Double.parseDouble(obj.get("battery").toString());
+                        double round = Math.round(p * 100.0 )/ 100.0;
+                        obj.put("battery",String.valueOf(round));
+                    }
+                    else {
+                        obj.put("battery", "0");
+                    }
+                }
+                else {
+                    obj.put("battery", "0");
+                }
+            }
+            result.setAttributes(attributes);
+
+        return result;
+    }
+    public ArrayList<Map<Object,Object>> getLastPoints(Long deviceId , String lastUpdate)  {
+        ArrayList<Map<Object,Object>> lastPoints = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        Date date = new Date();
+        Date minusDate = new Date();
+        if (lastUpdate!=null){
+            try {
+                TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
+                dateFormat.setTimeZone(etTimeZone);
+                date = dateFormat.parse(lastUpdate);
+
+            }catch (ParseException e){
+
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            cal.add(Calendar.HOUR, -5);
+            minusDate = cal.getTime();
+        }
+
+
+        Aggregation aggregation = newAggregation(
+                match(Criteria.where("deviceid").in(deviceId)),
+                match(Criteria.where("devicetime").gte(minusDate)),
+                match(Criteria.where("devicetime").lte(date)),
+                project("deviceid","devicetime","latitude","longitude"),
+                sort(Sort.Direction.DESC, "devicetime"),
+                limit(5)
+
+        ).withOptions(newAggregationOptions().allowDiskUse(true).build());
+
+
+        AggregationResults<BasicDBObject> groupResults
+                = mongoTemplate.aggregate(aggregation,"tc_positions", BasicDBObject.class);
+
+        if(groupResults.getMappedResults().size() > 0) {
+
+            Iterator<BasicDBObject> iterator = groupResults.getMappedResults().iterator();
+            while (iterator.hasNext()) {
+                BasicDBObject object = (BasicDBObject) iterator.next();
+
+                Map<Object,Object> points = new HashMap<Object, Object>();
+                points.put("lat", object.getDouble("latitude"));
+                points.put("long", object.getDouble("longitude"));
+
+                lastPoints.add(points);
+            }
+        }
+
+        return lastPoints;
     }
 
 }

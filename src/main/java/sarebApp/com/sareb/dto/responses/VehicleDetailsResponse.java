@@ -15,7 +15,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class VehicleDetailsResponse {
 
-    private int id;
+    private Long id;
     private String deviceName;
     private String uniqueId;
     private String sequenceNumber;
@@ -40,7 +40,7 @@ public class VehicleDetailsResponse {
     private String color;
     private String licenceExptDate;
     private Double carWeight;
-    private Double car_weight;
+    private Integer car_weight;
     private String vehiclePlate;
     private String companyName;
     private String positionId;
@@ -53,16 +53,19 @@ public class VehicleDetailsResponse {
     private Boolean ignition;
     private Integer sat;
     private Double power;
+//    private Boolean ignition;
+//    private Integer sat;
+//    private Double power;
     private String driver_num;
-    private Long companyId;
-    private Boolean expired;
-    private String simcardNumber;
-    private String create_date;
-    private String update_date_elm;
-    private String delete_date_elm;
+//    private Long companyId;
+//    private Boolean expired;
+//    private String simcardNumber;
+//    private String create_date;
+//    private String update_date_elm;
+//    private String delete_date_elm;
     private Long leftDays;
-    private String servertime;
-    private String devicetime;
+//    private String servertime;
+//    private String devicetime;
     private ArrayList<Map<Object,Object>> lastPoints;
 
 }
