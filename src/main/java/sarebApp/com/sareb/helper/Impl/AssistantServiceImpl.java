@@ -138,6 +138,7 @@ public class AssistantServiceImpl implements AssistantService {
                             .map(User::getId)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toList());
+                    userIds.add(userId);
                 }
             }else if (user.getAccountType() == 3){
                 //get all users of client
@@ -148,6 +149,7 @@ public class AssistantServiceImpl implements AssistantService {
                             .map(User::getId)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toList());
+                    userIds.add(userId);
                 }
             }
             return userIds;

@@ -17,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class MongoMapperResponse {
-    ArrayList<Map<Object,Object>> lastPoints;
+//    ArrayList<Map<Object,Object>> lastPoints;
 
 //    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     Object attributes;

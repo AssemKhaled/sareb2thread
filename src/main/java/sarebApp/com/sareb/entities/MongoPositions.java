@@ -1,6 +1,7 @@
 package sarebApp.com.sareb.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.types.ObjectId;
@@ -16,8 +17,7 @@ import java.util.Date;
  *
  */
 @Document(collection = "tc_positions")
-@Getter
-@Setter
+@Data
 public class MongoPositions {
 	
 	@Id
@@ -67,36 +67,6 @@ public class MongoPositions {
 	private Long driverid;
 
 	private Double weight;
-	
-
-	public MongoPositions(ObjectId _id, String protocol, Long deviceid, Date servertime, Date devicetime, Date fixtime,
-                          Boolean valid, Double latitude, Double longitude, Double altitude, Double speed, Double course,
-                          String address, Object attributes, Double accuracy, String network, String deviceName,
-                          String deviceReferenceKey, String driverReferenceKey, String driverName, Long driverid, Double weight) {
-		super();
-		this._id = _id;
-		this.protocol = protocol;
-		this.deviceid = deviceid;
-		this.servertime = servertime;
-		this.devicetime = devicetime;
-		this.fixtime = fixtime;
-		this.valid = valid;
-		this.latitude = latitude;
-		this.longitude = longitude;
-		this.altitude = altitude;
-		this.speed = speed;
-		this.course = course;
-		this.address = address;
-		this.attributes = attributes;
-		this.accuracy = accuracy;
-		this.network = network;
-		this.deviceName = deviceName;
-		this.deviceReferenceKey = deviceReferenceKey;
-		this.driverReferenceKey = driverReferenceKey;
-		this.driverName = driverName;
-		this.driverid = driverid;
-		this.weight = weight;
-	}
 
 	
 }

@@ -227,17 +227,17 @@ public class Utilities {
 
             JSONObject obj = new JSONObject(json);
 
-            if(obj.has("ignition")) {
-                if(obj.getBoolean("ignition")==true) {
-                    if(speed > 0) {
-                        ArrayList<Map<Object,Object>> lastPoints;
-
-                        lastPoints = getLastPoints(deviceId,lastUpdate);
-                        result.setLastPoints(lastPoints);
-
-                    }
-                }
-            }
+//            if(obj.has("ignition")) {
+//                if(obj.getBoolean("ignition")==true) {
+//                    if(speed > 0) {
+//                        ArrayList<Map<Object,Object>> lastPoints;
+//
+//                        lastPoints = getLastPoints(deviceId,lastUpdate);
+//                        result.setLastPoints(lastPoints);
+//
+//                    }
+//                }
+//            }
 
             if(obj.has("power")) {
                 if(obj.get("power") != null) {

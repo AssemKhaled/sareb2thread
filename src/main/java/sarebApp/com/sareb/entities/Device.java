@@ -202,6 +202,7 @@ public class Device extends Attributes{
 
 	@Column(name = "safety_requirements")
 	private Boolean safetyRequirements;
+
 	@JsonIgnore 
 	@ManyToMany(
             fetch = FetchType.LAZY,
@@ -214,6 +215,7 @@ public class Device extends Attributes{
     )
 	
 	private Set<User> user = new HashSet<>();
+
 	@JsonIgnore 
 	@ManyToMany(
             fetch = FetchType.LAZY,
@@ -226,6 +228,7 @@ public class Device extends Attributes{
     )
 
 	private Set<Driver> driver = new HashSet<>();
+
 	@JsonIgnore
 	@ManyToMany(
 			fetch = FetchType.LAZY,

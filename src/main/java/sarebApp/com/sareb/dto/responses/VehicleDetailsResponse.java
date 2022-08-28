@@ -46,6 +46,7 @@ public class VehicleDetailsResponse {
     private String positionId;
     private Double latitude;
     private Double longitude;
+    private Double course;
     private Double speed;
     private String address;
     private Object attributes;

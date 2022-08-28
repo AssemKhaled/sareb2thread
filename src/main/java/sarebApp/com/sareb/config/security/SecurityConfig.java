@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -42,7 +43,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //        auth.userDetailsService(myUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
         super.configure(auth);
     }
-
+    private static final String[] AUTH_WHITELIST = {
+            // -- swagger ui
+            "/v2/api-docs",
+            "/swagger-resources/**",
+            "/configuration/ui",
+            "/configuration/security",
+            "/swagger-ui.html",
+            "/webjars/**",
+            "/csrf",
+            "/"
+    };
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 //        http
@@ -61,6 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
                 .authorizeRequests()
+                        .antMatchers(AUTH_WHITELIST).permitAll()
                 .antMatchers("/app/login")
                 .permitAll()
                 .anyRequest()
@@ -81,6 +93,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //            http.saml2Logout().logoutUrl("/app/logout");
 //        http.logout().logoutRequestMatcher(new AntPathRequestMatcher("/app/logout"));
     }
+//    @Override
+//    public void configure(WebSecurity web) throws Exception {
+//        web.ignoring().antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources/**"
+//                ," /configuration/**", "/swagger-ui.html"," /webjars/**","/csrf",
+//                "/");
+//
+//         }
     public  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests().anyRequest().authenticated()
