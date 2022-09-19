@@ -105,7 +105,7 @@ public class ReportsHelper {
         if(report.equals("trips")) {
             ResponseEntity<List<TripReportResponse>> rateResponse =
                     restTemplate.exchange(URL.toString(),
-                            HttpMethod.GET,request, new ParameterizedTypeReference<List<TripReportResponse>>() {
+                            HttpMethod.GET,request, new ParameterizedTypeReference<>() {
                             });
             log.info("************************ returnFromTraccar TripReport ENDED ***************************");
 
@@ -232,8 +232,8 @@ public class ReportsHelper {
                     SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy, HH:mm:ss aa");
 
                     try {
-                        TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
-                        inputFormat.setTimeZone(etTimeZone);
+//                        TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
+//                        inputFormat.setTimeZone(etTimeZone);
                         dateTime = inputFormat.parse(tripReport.getStartTime());
 
                     }catch (ParseException e){
@@ -254,10 +254,9 @@ public class ReportsHelper {
                 SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy, HH:mm:ss aa");
 
                 try {
-                    TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
-                    inputFormat.setTimeZone(etTimeZone);
+//                    TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
+//                    inputFormat.setTimeZone(etTimeZone);
                     dateTime = inputFormat.parse(tripReport.getEndTime());
-
                 } catch (ParseException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -317,8 +316,8 @@ public class ReportsHelper {
                 SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy, HH:mm:ss aa");
 
                 try {
-                    TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
-                    inputFormat.setTimeZone(etTimeZone);
+//                    TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
+//                    inputFormat.setTimeZone(etTimeZone);
                     dateTime = inputFormat.parse(stopReportOne.getStartTime());
 
                 } catch (ParseException e) {
@@ -339,8 +338,8 @@ public class ReportsHelper {
                 SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy, HH:mm:ss aa");
 
                 try {
-                    TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
-                    inputFormat.setTimeZone(etTimeZone);
+//                    TimeZone etTimeZone = TimeZone.getTimeZone("UTC");
+//                    inputFormat.setTimeZone(etTimeZone);
                     dateTime = inputFormat.parse(stopReportOne.getEndTime());
 
                 } catch (ParseException e) {
@@ -367,7 +366,7 @@ public class ReportsHelper {
         double litres=10.0;
         double Fuel =0.0;
         double distance=0.0;
-        List<Long> deviceIds ; List<StopReportResponse> result = new ArrayList<>();List<Long> driverIds;
+        List<Long> deviceIds ; List<SummaryReportResponse> result = new ArrayList<>();List<Long> driverIds;
         deviceIds = summaryReports.stream().map(SummaryReportResponse::getDeviceId).collect(Collectors.toList());
         Optional<List<Device>> optionalDeviceList= deviceRepository.findAllByIdInAndDeleteDate(deviceIds,null);
         List<Device> deviceList = optionalDeviceList.get();

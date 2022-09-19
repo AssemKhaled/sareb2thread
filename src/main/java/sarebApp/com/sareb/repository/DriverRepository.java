@@ -1,5 +1,6 @@
 package sarebApp.com.sareb.repository;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -42,12 +43,12 @@ public interface DriverRepository extends JpaRepository<Driver,Long> {
 
     @Query(value = "select * FROM tc_drivers Where tc_drivers.id IN (:driverIds) AND  uniqueid LIKE LOWER(CONCAT('%',:search, '%'))" +
             "OR name LIKE LOWER(CONCAT('%',:search, '%')) OR " +
-            "sequence_number LIKE LOWER(CONCAT('%',:search, '%'))  LIMIT :offset,:size ",nativeQuery = true)
-    List<Driver> AdminDriverListSearch(@Param("driverIds") List<Long> driverIds , @Param("search") String search, @Param("offset")int offset, @Param("size")int size);
+            "mobile_num LIKE LOWER(CONCAT('%',:search, '%'))",nativeQuery = true)
+    Page<Driver> AdminDriverListSearch(@Param("driverIds") List<Long> driverIds , @Param("search") String search,Pageable pageable);
 
     @Query(value = "select * FROM tc_drivers Where tc_drivers.user_id IN (:userIds) AND uniqueid LIKE LOWER(CONCAT('%',:search, '%'))" +
             "OR name LIKE LOWER(CONCAT('%',:search, '%')) OR " +
-            "sequence_number LIKE LOWER(CONCAT('%',:search, '%'))  AND delete_date is null LIMIT :offset,:size ",nativeQuery = true)
-    List<Driver> DriverListSearch(@Param("userIds") List<Long> userIds ,@Param("search") String search,@Param("offset")int offset,@Param("size")int size);
+            "mobile_num LIKE LOWER(CONCAT('%',:search, '%'))  AND delete_date is null ",nativeQuery = true)
+    Page<Driver> DriverListSearch(@Param("userIds") List<Long> userIds ,@Param("search") String search,Pageable pageable);
 
 }

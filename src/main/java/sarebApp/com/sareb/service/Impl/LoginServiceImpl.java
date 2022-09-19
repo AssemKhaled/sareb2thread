@@ -1,19 +1,18 @@
 package sarebApp.com.sareb.service.Impl;
 
-import com.mongodb.BasicDBObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import sarebApp.com.sareb.config.MultiThreading;
 import sarebApp.com.sareb.config.security.JwtUtil;
 import sarebApp.com.sareb.config.security.MyUserDetailsService;
 import sarebApp.com.sareb.dto.ApiResponse;
@@ -22,7 +21,6 @@ import sarebApp.com.sareb.dto.requests.AuthRequest;
 import sarebApp.com.sareb.dto.responses.LoginResponse;
 import sarebApp.com.sareb.entities.MongoPositions;
 import sarebApp.com.sareb.entities.User;
-import sarebApp.com.sareb.exception.ApiGetException;
 import sarebApp.com.sareb.repository.MongoPositionsRepository;
 import sarebApp.com.sareb.repository.UserRepository;
 import sarebApp.com.sareb.service.LoginService;
@@ -31,12 +29,11 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregationOptions;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author Assem
@@ -50,8 +47,6 @@ public class LoginServiceImpl implements LoginService {
     private final MyUserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtTokenUtil;
-    private final MongoTemplate mongoTemplate;
-    private final MongoPositionsRepository mongoPositionsRepository;
 
 
     @Override
@@ -142,52 +137,89 @@ public class LoginServiceImpl implements LoginService {
         builder.setEntity(user);
         return builder.build();
     }
-    public ApiResponse<List<MongoPositions>> getTrips(Long deviceId, String from , String to){
-        ApiResponseBuilder<List<MongoPositions>> builder = new ApiResponseBuilder<>();
+
+    public ApiResponse<List<User>> getTrips(Long deviceId, String from , String to){
+        log.info("******************");
+        ApiResponseBuilder<List<User>> builder = new ApiResponseBuilder<>();
         List<MongoPositions> result = new ArrayList<>();
+        ExecutorService executorService= Executors.newCachedThreadPool();
         SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         SimpleDateFormat inputFormat1 = new SimpleDateFormat("yyyy-MM-dd");Date dateFrom;Date dateTo = null;
         inputFormat1.setLenient(false);inputFormat.setLenient(false);outputFormat.setLenient(false);
+//        MultiThreading multiThreading1 = new MultiThreading();
+//        Thread thread= new Thread(multiThreading1);
+//        thread.start();
+//        try {
+//            thread.join();
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+//        if (thread.isAlive()) {
+//
+//        }
 
-        try {
-            dateFrom = inputFormat.parse(from);
-            from = outputFormat.format(dateFrom);
-            dateTo = inputFormat.parse(to);
-            to = outputFormat.format(dateTo);
-        } catch (ParseException e2) {
-            try {
-                dateFrom = inputFormat1.parse(from);
-                from = outputFormat.format(dateFrom);
-                dateTo = inputFormat1.parse(to);
-                to = outputFormat.format(dateTo);
-            } catch (ParseException e) {
-                throw new ApiGetException("Start and End Dates should be in the following format YYYY-MM-DD or yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            }
-        }
-        Aggregation aggregation = newAggregation(
-                match(Criteria.where("deviceid").in(deviceId)),
-                match(Criteria.where("devicetime").gte(dateFrom)),
-                match(Criteria.where("devicetime").lte(dateTo))
-//      {$and:[{deviceid:131},{devicetime:{$gte:new Date('2022-08-15 11:50:07')}},{devicetime:{$lte:new Date('2022-08-16 11:50:07')}}]}
-        ).withOptions(newAggregationOptions().allowDiskUse(true).build());
+        Page<User> userPage = userRepository.findAll(PageRequest.of(0,10));
+        log.info(String.valueOf(userPage.getTotalElements()));
+        List<User> result2 = userPage.stream().toList();
 
-        log.info("STARTED????????????????/");
-        AggregationResults<MongoPositions> groupResults
-                = mongoTemplate.aggregate(aggregation,"tc_positions", MongoPositions.class);
-        log.info("ENDED????????????????/");
-        if(groupResults.getMappedResults().size() > 0) {
-
-            result.addAll(groupResults.getMappedResults());
-        }
+//        try {
+//            dateFrom = inputFormat.parse(from);
+//            from = outputFormat.format(dateFrom);
+//            dateTo = inputFormat.parse(to);
+//            to = outputFormat.format(dateTo);
+//        } catch (ParseException e2) {
+//            try {
+//                dateFrom = inputFormat1.parse(from);
+//                from = outputFormat.format(dateFrom);
+//                dateTo = inputFormat1.parse(to);
+//                to = outputFormat.format(dateTo);
+//            } catch (ParseException e) {
+//                throw new ApiGetException("Start and End Dates should be in the following format YYYY-MM-DD or yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+//            }
+//        }
+//        Aggregation aggregation = newAggregation(
+//                match(Criteria.where("deviceid").in(deviceId)),
+//                match(Criteria.where("devicetime").gte(dateFrom)),
+//                match(Criteria.where("devicetime").lte(dateTo))
+////      {$and:[{deviceid:131},{devicetime:{$gte:new Date('2022-08-15 11:50:07')}},{devicetime:{$lte:new Date('2022-08-16 11:50:07')}}]}
+//        ).withOptions(newAggregationOptions().allowDiskUse(true).build());
+//
+//        log.info("STARTED????????????????/");
+//        AggregationResults<MongoPositions> groupResults
+//                = mongoTemplate.aggregate(aggregation,"tc_positions", MongoPositions.class);
+//        log.info("ENDED????????????????/");
+//        if(groupResults.getMappedResults().size() > 0) {
+//
+//            result.addAll(groupResults.getMappedResults());
+//        }
 //        List<MongoPositions> result = mongoPositionsRepository.findAllByDeviceidAndServertimeBetween(deviceId,dateFrom,dateTo);
 //        log.info("STARTED??????");
 //        result = mongoPositionsRepository.findTrips(deviceId,dateFrom,dateTo);
 //        log.info("ENDED??????");
-        builder.setSize(result.size());
+        log.info("******************");
+        builder.setSize(result2.size());
         builder.setMessage("Success");
         builder.setStatusCode(200);
-        builder.setEntity(result);
+        builder.setEntity(result2);
+        builder.setSuccess(true);
         return builder.build();
+    }
+
+    @Async
+    public CompletableFuture<ApiResponse<List<User>>> saveUsers(Long deviceId, String from , String to) throws Exception {
+        long start = System.currentTimeMillis();
+        ApiResponse<List<User>> users = getTrips(deviceId,from,to);
+        log.info("saving list of users of size {}",users.getSize(), "" + Thread.currentThread().getName());
+//        users = repository.saveAll(users);
+        long end = System.currentTimeMillis();
+        log.info("Total time {}", (end - start));
+        return CompletableFuture.completedFuture(users);
+    }
+    @Async
+    public CompletableFuture<List<User>> findAllUsers(){
+        log.info("get list of user by "+Thread.currentThread().getName());
+        List<User> users=userRepository.findAll();
+        return CompletableFuture.completedFuture(users);
     }
 }

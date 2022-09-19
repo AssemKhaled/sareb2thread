@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -193,6 +195,7 @@ public class DeviceServiceImpl implements DeviceService {
         Double latitude = null;Double longitude = null;Double speed = null;String address = null;Long id;
         Object attributes = null; Long driverId; String driverPhoto = null; String driverUniqueId = null;
         String driverName = null; String driverNum = null;Double course = null; String status = null;
+        Double power = null ;Integer sat = null;Boolean ignition = null;Double operator=null;
         Optional<User> user = userRepository.findByIdAndDeleteDate(userId,null);
         if (user.isEmpty()) {
             throw new ApiGetException("User Is Not Found");
@@ -244,7 +247,31 @@ public class DeviceServiceImpl implements DeviceService {
                         mongoMapper = utilities.MongoObjJsonMapper(mongoPositions.getAttributes(),speed,device.getId(),device.getLastupdate());
                         attributes = mongoMapper.getAttributes();
 //                        lastPoints = mongoMapper.getLastPoints();
+                        ObjectMapper mapper = new ObjectMapper();
+                        String json = null;
+                        try {
+                            json = mapper.writeValueAsString(attributes);
+                        } catch (JsonProcessingException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
 
+                        JSONObject obj = new JSONObject(json);
+
+                        if(obj.has("power")) {
+                            power = obj.getDouble("power");
+                        }
+
+                        if(obj.has("ignition")) {
+                            ignition = obj.getBoolean("ignition");
+                        }
+
+                        if(obj.has("sat")) {
+                            sat = obj.getInt("sat");
+                        }
+                        if(obj.has("operator")) {
+                            operator = obj.getDouble("operator");
+                        }
                     }
                 }
 
@@ -294,6 +321,10 @@ public class DeviceServiceImpl implements DeviceService {
                         .attributes(attributes)
                         .driver_num(driverNum)
                         .status(status)
+                        .sat(sat)
+                        .operator(operator)
+                        .power(power)
+                        .ignition(ignition)
                         .build();
                 log.info("*********************** GET DEVICE DETAILS ENDED ***********************");
                 builder.setEntity(result);
@@ -334,17 +365,26 @@ public class DeviceServiceImpl implements DeviceService {
                     .collect(Collectors.toList());
             optionalDevicesList = deviceRepository.findAllByIdIn(deviceIds,PageRequest.of(offset,10));
             if (!Objects.equals(search, "")){
-                optionalDevicesList = Optional.ofNullable(searchDevice(offset,search,deviceIds,1));
+                Page<Device> devicePage ;
+                devicePage = searchDevice(offset,search,deviceIds,1);
+                optionalDevicesList = Optional.of(devicePage.stream().toList());
+                listSize = (int) devicePage.getTotalElements();
+            }else {
+                listSize = deviceIdsInt.size();
             }
-            listSize = deviceIdsInt.size();
         } else if (user.get().getAccountType().equals(2)||user.get().getAccountType().equals(3)) {
             userIds = assistantServiceImpl.getUserChildrens(userId);
             deviceIdsInt = deviceRepository.clientDeviceIds(userIds);
             optionalDevicesList = deviceRepository.findAllByUser_idInAndDeleteDate(userIds,null,PageRequest.of(offset,10));
-            if (!Objects.equals(search, "")){
-                optionalDevicesList = Optional.ofNullable(searchDevice(offset,search,userIds,23));
+            if (!Objects.equals(search,"")){
+//                optionalDevicesList = Optional.ofNullable(searchDevice(offset,search,userIds,23));
+                Page<Device> devicePage ;
+                devicePage = searchDevice(offset,search,userIds,23);
+                optionalDevicesList = Optional.of(devicePage.stream().toList());
+                listSize = (int) devicePage.getTotalElements();
+            }else {
+                listSize = deviceIdsInt.size();
             }
-            listSize = deviceIdsInt.size();
         } else if (user.get().getAccountType().equals(4)) {
             Optional<List<UserClientDevice>> optionalUserClientDevice =
                     userClientDeviceRepository.findAllByUserid(userId);
@@ -510,16 +550,16 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public List<Device> searchDevice(int offset, String search,List<Long> ids,int type) {
+    public Page<Device> searchDevice(int offset, String search,List<Long> ids,int type) {
         log.info("*********************** Search Device ENDED ***********************");
-        List<Device> deviceList;
+        Page<Device> deviceList;
         if (type == 1) {
-            deviceList = deviceRepository.AdminDeviceListSearch(ids,search,offset,10);
+            deviceList = deviceRepository.AdminDeviceListSearch(ids,search,PageRequest.of(offset,10));
         }else{
-            deviceList = deviceRepository.DeviceListSearch(ids,search,offset,10);
+            deviceList = deviceRepository.DeviceListSearch(ids,search,PageRequest.of(offset,10));
         }
         log.info("*********************** Search Device ENDED ***********************");
-        if (deviceList.size() > 0) {
+        if (!deviceList.isEmpty()) {
             return deviceList;
         }else {
          throw new ApiGetException("No Matches Found");
@@ -701,86 +741,6 @@ public class DeviceServiceImpl implements DeviceService {
         builder.setSuccess(true);
         return builder.build();
 
-    }
-
-    @Override
-    public ApiResponse<GetStatusDevices> getStatus(Long userId) {
-        ApiResponseBuilder<GetStatusDevices>builder=new ApiResponseBuilder<>();
-        User loggeduser=null;
-        Integer onlineDevices=0;
-        Integer outOfNetworkDevices=0;
-        Integer totalDevices=0;
-        Integer offlineDevices=0;
-        if(userId!=0){
-            Optional<User> user=userRepository.findById(userId);
-            if (user.isPresent()){
-                loggeduser=user.get();
-                List<Long>ids;List<Long>userids;List<String>onlineDeviceIds;List<String>outDevicesIds;
-                if(loggeduser.getAccountType().equals(1)){
-
-                    List<Integer>deviceIds=deviceRepository.getAllDeviceIds();
-                    ids = deviceIds.stream()
-                            .map(Integer::longValue)
-                            .collect(Collectors.toList());
-                    onlineDeviceIds=deviceRepository.getNumberOfOnlineDevicesListByIds(ids);
-                    outDevicesIds=deviceRepository.getNumberOfOutOfNetworkDevicesListByIds(ids);
-                    onlineDevices=onlineDeviceIds.size();
-                    outOfNetworkDevices=outDevicesIds.size();
-                    totalDevices=deviceIds.size();
-                    offlineDevices=totalDevices-onlineDevices-outOfNetworkDevices;
-
-                }
-                else if (loggeduser.getAccountType().equals(2)) {
-                    userids=assistantServiceImpl.getUserChildrens(userId);
-                    onlineDeviceIds=deviceRepository.getNumberOfOnlineDevicesList(userids);
-                    outDevicesIds=deviceRepository.getNumberOfOutOfNetworkDevicesList(userids);
-                    onlineDevices=onlineDeviceIds.size();
-                    outOfNetworkDevices=outDevicesIds.size();
-                    totalDevices=deviceRepository.getTotalNumberOfUserDevices(userids);
-                    offlineDevices=totalDevices-onlineDevices-outOfNetworkDevices;
-
-                }
-                else if (loggeduser.getAccountType().equals(3)) {
-                    onlineDeviceIds=deviceRepository.getNumberOfOnlineDevicesListClient(userId);
-                    outDevicesIds=deviceRepository.getNumberOfOutOfNetworkDevicesListClient(userId);
-                    onlineDevices=onlineDeviceIds.size();
-                    outOfNetworkDevices=outDevicesIds.size();
-                    totalDevices=deviceRepository.getTotalNumberOfUserDevicesClient(userId);
-                    offlineDevices=totalDevices-onlineDevices-outOfNetworkDevices;
-
-
-                } else if (loggeduser.getAccountType().equals(4)) {
-                    List<Long>deviceIds=userClientDeviceRepository.getDevicesIds(userId);
-                    onlineDeviceIds=deviceRepository.getNumberOfOnlineDevicesListByIds(deviceIds);
-                    outDevicesIds=deviceRepository.getNumberOfOutOfNetworkDevicesListByIds(deviceIds);
-                    onlineDevices=onlineDeviceIds.size();
-                    outOfNetworkDevices=outDevicesIds.size();
-                    totalDevices=deviceRepository.getTotalNumberOfUserDevicesByIds(deviceIds);
-                    offlineDevices=totalDevices-onlineDevices-offlineDevices;
-                }
-
-            }else {
-                builder.setMessage("User is Not Found");
-                builder.setStatusCode(HttpStatus.NOT_FOUND.value());
-                builder.setEntity(null);
-                builder.setSize(0);
-                builder.setSuccess(false);
-                return builder.build();
-            }
-        }else {
-            builder.setMessage("User ID is required");
-            builder.setStatusCode(HttpStatus.BAD_REQUEST.value());
-            builder.setEntity(null);
-            builder.setSize(0);
-            builder.setSuccess(false);
-            return builder.build();
-        }
-        builder.setMessage("success");
-        builder.setStatusCode(HttpStatus.OK.value());
-        builder.setEntity(GetStatusDevices.builder().offlineDevices(offlineDevices).unknownDevices(outOfNetworkDevices).totalDevices(totalDevices).onlineDevices(onlineDevices).build());
-        builder.setSize(0);
-        builder.setSuccess(true);
-        return builder.build();
     }
 
     @Override

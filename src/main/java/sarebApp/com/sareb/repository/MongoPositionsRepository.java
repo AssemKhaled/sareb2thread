@@ -35,7 +35,7 @@ public interface MongoPositionsRepository extends MongoRepository<MongoPositions
 	List<MongoPositions> findByDeviceIdIn(List<Long> deviceIds,Pageable pageable);
 
 	@Aggregation(pipeline = {
-			"{'$match':{'deviceid': ?0,'servertime':{$gt:?1 , $lte:?2}}}","{'$	sort': {'servertime':-1}}"
+			"{'$match':{'deviceid':?0,'servertime':{$gt:?1 , $lte:?2}}}","{'$sort': {'servertime':-1}}"
 	})
 	List<MongoPositions> findTrips(Long deviceId , Date from , Date to);
 

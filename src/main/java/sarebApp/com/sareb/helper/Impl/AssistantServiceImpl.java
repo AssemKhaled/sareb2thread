@@ -10,6 +10,7 @@ import sarebApp.com.sareb.entities.User;
 import sarebApp.com.sareb.helper.AssistantService;
 import sarebApp.com.sareb.repository.DeviceRepository;
 import sarebApp.com.sareb.repository.UserRepository;
+import sarebApp.com.sareb.service.Impl.LoginServiceImpl;
 
 
 import java.text.ParseException;
@@ -27,10 +28,12 @@ public class AssistantServiceImpl implements AssistantService {
     private static final Log logger = LogFactory.getLog(AssistantServiceImpl.class);
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
+    private final LoginServiceImpl loginService;
 
-    public AssistantServiceImpl(UserRepository userRepository, DeviceRepository deviceRepository) {
+    public AssistantServiceImpl(UserRepository userRepository, DeviceRepository deviceRepository, LoginServiceImpl loginService) {
         this.userRepository = userRepository;
         this.deviceRepository = deviceRepository;
+        this.loginService = loginService;
     }
 
     @Override

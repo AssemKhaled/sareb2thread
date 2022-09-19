@@ -1,5 +1,6 @@
 package sarebApp.com.sareb.repository;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -61,13 +62,13 @@ public interface DeviceRepository extends JpaRepository<Device,Long> {
 
     @Query(value = "select * FROM tc_devices Where tc_devices.id IN (:deviceIds) AND  uniqueid LIKE LOWER(CONCAT('%',:search, '%'))" +
             "OR name LIKE LOWER(CONCAT('%',:search, '%')) OR " +
-            "sequence_number LIKE LOWER(CONCAT('%',:search, '%'))  LIMIT :offset,:size ",nativeQuery = true)
-    List<Device> AdminDeviceListSearch(@Param("deviceIds") List<Long> deviceIds ,@Param("search") String search,@Param("offset")int offset,@Param("size")int size);
+            "sequence_number LIKE LOWER(CONCAT('%',:search, '%')) ",nativeQuery = true)
+    Page<Device> AdminDeviceListSearch(@Param("deviceIds") List<Long> deviceIds , @Param("search") String search, Pageable pageable);
 
     @Query(value = "select * FROM tc_devices Where tc_devices.user_id IN (:userIds) AND uniqueid LIKE LOWER(CONCAT('%',:search, '%'))" +
             "OR name LIKE LOWER(CONCAT('%',:search, '%')) OR " +
-            "sequence_number LIKE LOWER(CONCAT('%',:search, '%'))  AND delete_date is null LIMIT :offset,:size ",nativeQuery = true)
-    List<Device> DeviceListSearch(@Param("userIds") List<Long> userIds ,@Param("search") String search,@Param("offset")int offset,@Param("size")int size);
+            "sequence_number LIKE LOWER(CONCAT('%',:search, '%'))  AND delete_date is null ",nativeQuery = true)
+    Page<Device> DeviceListSearch(@Param("userIds") List<Long> userIds ,@Param("search") String search,Pageable pageable);
 
     @Query(value = "select id,name from tc_devices where id IN (:deviceIds ) and delete_date is null",nativeQuery = true)
      List<DeviceSelect> getDeviceSelectByIds(@Param("deviceIds")List<Long> deviceIds);

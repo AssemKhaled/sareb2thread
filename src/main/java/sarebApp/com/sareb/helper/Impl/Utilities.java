@@ -21,6 +21,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -66,11 +67,10 @@ public class Utilities {
         }
         if(date != null){
             ZoneOffset zo = ZoneOffset.of(timeOffset);
-            OffsetDateTime odt = OffsetDateTime.ofInstant(date.toInstant(), zo);
-            return String.valueOf(odt).substring(0,19).replace("T", " ");
-//            long epochMilli = odt.toInstant().toEpochMilli();
-//            Date dateObject = new Date(epochMilli);
-//            return outputFormat.format(dateObject);
+            String odt = OffsetDateTime.ofInstant(date.toInstant(), zo).format(DateTimeFormatter.ISO_DATE_TIME);
+            String sDate = odt.substring(0,19).replace("T", " ");
+
+            return sDate;
         }
         return null;
     }

@@ -9,4 +9,5 @@ import sarebApp.com.sareb.dto.responses.LoginResponse;
 public interface LoginService {
     ApiResponse<LoginResponse> login(String authorization);
     ApiResponse<?> logout();
+
 }

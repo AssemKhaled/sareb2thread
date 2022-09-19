@@ -28,11 +28,12 @@ public class ReportsController {
                                                                                 @RequestParam (value = "to", defaultValue = "0") String to,
                                                                                 @RequestParam (value = "page", defaultValue = "1") int page,
                                                                                 @RequestParam (value = "start", defaultValue = "0") int start,
-                                                                                @RequestParam (value = "limit", defaultValue = "25") int limit,
-                                                                                @RequestParam (value = "userId",defaultValue = "0")Long userId) {
+                                                                                @RequestParam (value = "limit", defaultValue = "10") int limit,
+                                                                                @RequestParam (value = "userId",defaultValue = "0")Long userId,
+                                                                                @RequestParam (value = "timeOffset",defaultValue = "")String timeOffset) {
         try{
             return ResponseEntity.ok(
-                    reportServiceImpl.getStopsReport(deviceId, type, from, to, page, start, limit,userId,"%2B0200")
+                    reportServiceImpl.getStopsReport(deviceId, type, from, to, page, start, limit,userId,timeOffset)
             );
 
         }catch (Exception | Error e){
@@ -47,11 +48,25 @@ public class ReportsController {
                                                                                 @RequestParam (value = "to", defaultValue = "0") String to,
                                                                                 @RequestParam (value = "page", defaultValue = "1") int page,
                                                                                 @RequestParam (value = "start", defaultValue = "0") int start,
-                                                                                @RequestParam (value = "limit", defaultValue = "25") int limit,
-                                                                                @RequestParam (value = "userId",defaultValue = "0")Long userId) {
+                                                                                @RequestParam (value = "limit", defaultValue = "10") int limit,
+                                                                                @RequestParam (value = "userId",defaultValue = "0")Long userId,
+                                                                                @RequestParam (value = "timeOffset",defaultValue = "")String timeOffset) {
         try{
             return ResponseEntity.ok(
-                    reportServiceImpl.getTripsReport(deviceId, type, from, to, page, start, limit,userId,"%2B0200")
+                    reportServiceImpl.getTripsReport(deviceId, type, from, to, page, start, limit,userId,timeOffset)
+            );
+
+        }catch (Exception | Error e){
+            throw new ApiRequestException(e.getLocalizedMessage());
+        }
+    }
+    @GetMapping(path = "/getViewTrip")
+    public ResponseEntity<ApiResponse<List<TripViewPositions>>> getViewTrip(@RequestParam (value = "deviceId", defaultValue = "") Long deviceId,
+                                                                            @RequestParam (value = "from", defaultValue = "") String from,
+                                                                            @RequestParam (value = "to", defaultValue = "") String to) {
+        try{
+            return ResponseEntity.ok(
+                    reportServiceImpl.getViewTrip(deviceId,from,to)
             );
 
         }catch (Exception | Error e){
@@ -66,11 +81,12 @@ public class ReportsController {
                                                                                      @RequestParam (value = "to", defaultValue = "0") String to,
                                                                                      @RequestParam (value = "page", defaultValue = "1") int page,
                                                                                      @RequestParam (value = "start", defaultValue = "0") int start,
-                                                                                     @RequestParam (value = "limit", defaultValue = "25") int limit,
-                                                                                     @RequestParam (value = "userId",defaultValue = "0")Long userId) {
+                                                                                     @RequestParam (value = "limit", defaultValue = "10") int limit,
+                                                                                     @RequestParam (value = "userId",defaultValue = "0")Long userId,
+                                                                                     @RequestParam (value = "timeOffset",defaultValue = "")String timeOffset) {
         try{
             return ResponseEntity.ok(
-                    reportServiceImpl.getSummaryReport(deviceId, type, from, to, page, start, limit,userId,"%2B0200")
+                    reportServiceImpl.getSummaryReport(deviceId, type, from, to, page, start, limit,userId,timeOffset)
             );
 
         }catch (Exception | Error e){
@@ -79,17 +95,18 @@ public class ReportsController {
     }
 
     @GetMapping(path = "/getEventsReport")
-    public @ResponseBody ResponseEntity<ApiResponse<List<EventReportResponse>>> getEventsReport(@RequestParam (value = "deviceId", defaultValue = "0") Long [] deviceId,
+    public ResponseEntity<ApiResponse<List<EventReportResponse>>> getEventsReport(@RequestParam (value = "deviceId", defaultValue = "0") Long [] deviceId,
                                                                                                 @RequestParam (value = "offset", defaultValue = "0") int offset,
                                                                                                 @RequestParam (value = "from", defaultValue = "0") String start,
                                                                                                 @RequestParam (value = "exportData", defaultValue = "") String exportData,
                                                                                                 @RequestParam (value = "to", defaultValue = "0") String end,
                                                                                                 @RequestParam (value = "type", defaultValue = "") String type,
                                                                                                 @RequestParam (value = "search", defaultValue = "") String search,
-                                                                                                @RequestParam (value = "userId",defaultValue = "0")Long userId) {
+                                                                                                @RequestParam (value = "userId",defaultValue = "0")Long userId,
+                                                                                                @RequestParam (value = "timeOffset",defaultValue = "")String timeOffset ) {
         try{
             return ResponseEntity.ok(
-                    reportServiceImpl.getEventsReport(deviceId,offset, start, end, type, search, userId,exportData,"%2B0200")
+                    reportServiceImpl.getEventsReport(deviceId,offset, start, end, type, search, userId,exportData,timeOffset)
             );
 
         }catch (Exception | Error e){

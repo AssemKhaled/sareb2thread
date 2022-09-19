@@ -21,6 +21,8 @@ public interface ReportService {
     ApiResponse<List<SummaryReportResponse>> getSummaryReport(Long [] deviceId, String type, String from
             ,String to, int page, int start, int limit, Long userId, String timeOffset);
 
+    ApiResponse<List<TripViewPositions>> getViewTrip(Long deviceId,String from,String to);
+
 //    ApiResponse<List<EventReportTraccarResponse>> getEventsReportTraccar(Long [] deviceId, String type, String from
 //            , String to, int page, int start, int limit, Long userId);
 

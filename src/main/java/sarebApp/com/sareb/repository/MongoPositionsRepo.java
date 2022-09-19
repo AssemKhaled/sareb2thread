@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregationOptions;
 
 @Repository
 public class MongoPositionsRepo {
@@ -27,7 +28,6 @@ public class MongoPositionsRepo {
     public Integer getCountFromAttrbuitesChart(List<String> positionIds, String attr, Boolean value){
 
         Integer size = 0;
-
 
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -48,9 +48,6 @@ public class MongoPositionsRepo {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-
-
         List<ObjectId> ids = new ArrayList<ObjectId>();
 
         for(String id:positionIds) {
@@ -60,7 +57,7 @@ public class MongoPositionsRepo {
         }
 
         Aggregation aggregation = newAggregation(
-                match(Criteria.where("_id").in(ids).and("devicetime").gte(dateFrom).lte(dateTo).and("attributes."+attr).in(value)),
+                match(Criteria.where("_id").in(ids).and("servertime").gte(dateFrom).lte(dateTo).and("attributes."+attr).in(value)),
                 count().as("size")
 
         ).withOptions(newAggregationOptions().allowDiskUse(true).build());
@@ -124,10 +121,10 @@ public class MongoPositionsRepo {
         }
 
         Aggregation aggregation = newAggregation(
-                match(Criteria.where("_id").in(ids).and("devicetime").gte(dateFrom).lte(dateTo)),
-                project("deviceid","attributes","deviceName","driverName","attributes.todayHours","attributes.todayHoursString").and("devicetime").dateAsFormattedString("%Y-%m-%dT%H:%M:%S.%LZ").as("devicetime"),
-                sort(Sort.Direction.DESC, "devicetime"),
-                sort(Sort.Direction.DESC, "attributes.todayHours"),
+                match(Criteria.where("_id").in(ids).and("servertime").gte(dateFrom).lte(dateTo)),
+                project("deviceid","deviceName","driverName","attributes.todayHoursString","attributes.todayHours").and("servertime").dateAsFormattedString("%Y-%m-%dT%H:%M:%S.%LZ").as("servertime"),
+                sort(Sort.Direction.DESC, "servertime"),
+//                sort(Sort.Direction.DESC, "attributes.todayHoursString"),
                 limit(10)
 
 
@@ -147,12 +144,13 @@ public class MongoPositionsRepo {
                 position.put("hours","0");
 
                 if(object.containsField("todayHours")) {
-
+//
                     long min = TimeUnit.MILLISECONDS.toMinutes((long) object.getDouble("todayHours"));
 
                     Double hours = (double) min;
                     double roundOffDistance = Math.round(hours * 100.0) / 100.0;
-                    position.put("hours",hours/60);
+                    position.put("hours",Math.round(hours/60));
+//                    position.put("hours",object.get("todayHours").toString());
 
                 }
                 if(object.containsField("deviceName") && object.get("deviceName") != null) {

@@ -35,6 +35,6 @@ public class ApiExceptionHandler {
                 .zonedDateTime(ZonedDateTime.now(ZoneId.of("UTC")))
                 .build();
 
-        return new ResponseEntity<>(value,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(value,HttpStatus.NOT_FOUND);
     }
 }

@@ -34,6 +34,8 @@ public class UserResponse {
     private Long clientId;
     private Integer accountType;
     private String createDate;
+    private String expDate;
+    private Long leftDays;
     private Set<Attribute> attribute = new HashSet<>();
 
 }

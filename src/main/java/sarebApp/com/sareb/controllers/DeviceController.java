@@ -108,16 +108,5 @@ public class DeviceController {
         }
 
     }
-    @GetMapping(path="/getStatus")
-    public ResponseEntity<ApiResponse<GetStatusDevices>>getStatus(@RequestParam (value = "userId", defaultValue = "0") Long userId){
-        try {
-            return ResponseEntity.ok(deviceServiceImpl.getStatus(userId));
-        }catch (Exception |Error e){
-
-            throw new ApiRequestException(e.getLocalizedMessage());
-        }
-
-    }
-
 
 }

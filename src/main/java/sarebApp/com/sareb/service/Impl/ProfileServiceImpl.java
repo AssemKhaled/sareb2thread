@@ -11,6 +11,12 @@ import sarebApp.com.sareb.entities.User;
 import sarebApp.com.sareb.helper.Impl.DecodePhoto;
 import sarebApp.com.sareb.repository.UserRepository;
 import sarebApp.com.sareb.service.ProfileService;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
@@ -98,7 +104,8 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public ApiResponse<UserResponse> getUserInfo(Long userId) {
         ApiResponseBuilder<UserResponse>builder =new ApiResponseBuilder<>();
-        User loggedUser=null;
+        User loggedUser=null; Long leftDays = null;Date now = new Date();
+
         if (userId!=0){
             Optional<User> user=userRepository.findById(userId);
             if(!user.isPresent()){
@@ -111,17 +118,43 @@ public class ProfileServiceImpl implements ProfileService {
             }
             else {
                 loggedUser=user.get();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                Date exp = new Date();
+                if (loggedUser.getExp_date() !=null){
+                    try {
+                        exp = sdf.parse(loggedUser.getExp_date());
+                        leftDays = ChronoUnit.DAYS.between(now.toInstant(),exp.toInstant());
+                    }catch (ParseException e){
+                        leftDays = null;
+                        e.printStackTrace();
+                    }
+                }
                 if(loggedUser.getDeleteDate()==null){
                     builder.setMessage("success");
                     builder.setStatusCode(HttpStatus.OK.value());
                     builder.setEntity(UserResponse.builder()
-                            .id(loggedUser.getId()).email(loggedUser.getEmail()).photo(loggedUser.getPhoto())
+                            .id(loggedUser.getId())
+                            .email(loggedUser.getEmail())
+                            .photo(loggedUser.getPhoto())
                             .accountType(loggedUser.getAccountType())
                             .attribute(loggedUser.getAttribute())
-                            .clientId(loggedUser.getClientId()).commercialReg(loggedUser.getCommercial_reg()).companyNum(loggedUser.getCompany_num()).companyPhone(loggedUser.getCompany_phone()).IsCompany(loggedUser.getIsCompany()).phone(loggedUser.getPhone())
-                            .identityNum(loggedUser.getIdentity_num()).createDate(loggedUser.getCreate_date()).dateOfBirth(loggedUser.getDateOfBirth()).dateType(loggedUser.getDateType()).deleteDate(loggedUser.getDeleteDate()).vendorId(loggedUser.getVendorId())
+                            .clientId(loggedUser.getClientId())
+                            .commercialReg(loggedUser.getCommercial_reg())
+                            .companyNum(loggedUser.getCompany_num())
+                            .companyPhone(loggedUser.getCompany_phone())
+                            .IsCompany(loggedUser.getIsCompany())
+                            .phone(loggedUser.getPhone())
+                            .identityNum(loggedUser.getIdentity_num())
+                            .createDate(loggedUser.getCreate_date())
+                            .dateOfBirth(loggedUser.getDateOfBirth())
+                            .dateType(loggedUser.getDateType())
+                            .deleteDate(loggedUser.getDeleteDate())
+                            .vendorId(loggedUser.getVendorId())
                             .isDeleted(loggedUser.getIs_deleted())
-                            .managerPhone(loggedUser.getManager_phone()).managerName(loggedUser.getManager_name())
+                            .managerPhone(loggedUser.getManager_phone())
+                            .managerName(loggedUser.getManager_name())
+                            .expDate(loggedUser.getExp_date())
+                            .leftDays(leftDays)
                             .build());
                     builder.setSize(0);
                     builder.setSuccess(true);

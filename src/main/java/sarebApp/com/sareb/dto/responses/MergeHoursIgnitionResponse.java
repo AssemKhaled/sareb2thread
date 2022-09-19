@@ -12,5 +12,5 @@ import java.util.Map;
 @Setter
 public class MergeHoursIgnitionResponse {
     List<Map> hours;
-    Map status;
+//    Map status;
 }

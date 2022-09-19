@@ -54,6 +54,7 @@ public class VehicleDetailsResponse {
     private Boolean ignition;
     private Integer sat;
     private Double power;
+    private Double operator;
 //    private Boolean ignition;
 //    private Integer sat;
 //    private Double power;

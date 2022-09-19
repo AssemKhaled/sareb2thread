@@ -2,6 +2,7 @@ package sarebApp.com.sareb.service.Impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import sarebApp.com.sareb.dto.ApiResponse;
@@ -48,17 +49,25 @@ public class DriverServiceImpl implements DriverService {
                 driverIds = driverIdsInt.stream().map(Integer::longValue).collect(Collectors.toList());
                 optionalDriverList = driverRepository.findAllByIdIn(driverIds, PageRequest.of(offset,10));
                 if (!Objects.equals(search, "")){
-                    optionalDriverList = Optional.ofNullable(searchDriver(offset,search,driverIds,1));
+                    Page<Driver> driverPage;
+                    driverPage = searchDriver(offset,search,driverIds,1);
+                    optionalDriverList = Optional.of(driverPage.stream().toList());
+                    listSize = (int) driverPage.getTotalElements();
+                }else {
+                    listSize = driverIdsInt.size();
                 }
-                listSize = driverIdsInt.size();
             } else if (user.getAccountType().equals(2)||user.getAccountType().equals(3)) {
                 userIds = assistantServiceImpl.getUserChildrens(userId);
                 driverIdsInt = driverRepository.clientDriverIds(userIds);
                 optionalDriverList = driverRepository.findAllByUserIdInAndDeleteDate(userIds,null,PageRequest.of(offset,10));
                 if (!Objects.equals(search, "")){
-                    optionalDriverList = Optional.ofNullable(searchDriver(offset,search,userIds,23));
+                    Page<Driver> driverPage;
+                    driverPage = searchDriver(offset,search,userIds,23);
+                    optionalDriverList = Optional.of(driverPage.stream().toList());
+                    listSize = (int) driverPage.getTotalElements();
+                }else {
+                    listSize = driverIdsInt.size();
                 }
-                listSize = driverIdsInt.size();
             }else {
                 Optional<List<UserClientDriver>> optionalUserClientDrivers =
                         userClientDriverRepository.findAllByUserid(userId);
@@ -216,16 +225,16 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public List<Driver> searchDriver(int offset, String search, List<Long> ids, int type) {
+    public Page<Driver> searchDriver(int offset, String search, List<Long> ids, int type) {
         log.info("*********************** Search Driver ENDED ***********************");
-        List<Driver> driverList;
+        Page<Driver> driverList;
         if (type == 1) {
-            driverList = driverRepository.AdminDriverListSearch(ids,search,offset,10);
+            driverList = driverRepository.AdminDriverListSearch(ids,search,PageRequest.of(offset,10));
         }else{
-            driverList = driverRepository.DriverListSearch(ids,search,offset,10);
+            driverList = driverRepository.DriverListSearch(ids,search,PageRequest.of(offset,10));
         }
         log.info("*********************** Search Driver ENDED ***********************");
-        if (driverList.size() > 0) {
+        if (!driverList.isEmpty()) {
             return driverList;
         }else {
             throw new ApiGetException("No Matches Found");
